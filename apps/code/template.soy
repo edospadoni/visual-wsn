@@ -1,0 +1,216 @@
+{namespace codepage}
+
+/**
+ * This is a Closure Template.
+ *
+ * To regenerate just en.js, run this command:
+ * java -jar apps/_soy/SoyToJsSrcCompiler.jar --outputPathFormat apps/code/generated/en.js --srcs apps/common.soy,apps/code/template.soy
+ *
+ * To regenerate all files, see: trunk/apps/common.soy
+ */
+
+/**
+ * Translated messages for use in JavaScript.
+ */
+{template .messages}
+  {call apps.messages /}
+  <div style="display: none">
+    <span id="Code_badXml">{msg meaning="Code.badXml" desc="alert - Message shown when the user tries switching from the XML tab after entering XML text that could not be parsed.  This asks whether they wish to abandon the XML they added.  If they select 'OK' (or the translated equivalent), the XML is cleared, and the other tab is shown.  If they select 'Cancel', they remain on the XML tab with the bad XML.\n\nUsed in JavaScript <code>window.confirm()</code>."}Error parsing XML:\n%1\n\nSelect 'OK' to abandon your changes or 'Cancel' to further edit the XML.{/msg}</span>
+    <span id="Code_badCode">{msg meaning="Code.badCode" desc="alert - Message shown if an error occurs while interpreting the user program.  The error description follows."}Program error:\n%1{/msg}</span>
+    <span id="Code_timeout">{msg meaning="Code.timeout" desc="alert - Message shown if the program has run for more than the permitted number of steps.  This exists so that programs with infinite loops do not run forever."}Maximum execution iterations exceeded.{/msg}</span>
+    <span id="Code_discard">{msg meaning="Code.discard" desc="alert - Message shown after the user clicks on the 'discard all' icon.  Selecting 'OK' (or the translated equivalent) causes all of the blocks to be discarded.  Selecting 'Cancel' prevents blocks from being deleted.\n\nParameters:\n* %1 - number of blocks to be deleted. It is always an integer greater than or equal to 2."}Delete all %1 blocks?{/msg}</span>
+  </div>
+{/template}
+
+/**
+ * Web page structure.
+ */
+{template .start}
+  {call .messages /}
+  <script type="text/javascript" src="../../blockly_compressed.js"></script>
+
+  <script type="text/javascript" src="external-js/jquery.js"></script>
+  <script type="text/javascript" src="external-js/jquery.qrcode.min.js"></script>
+  <script type="text/javascript" src="external-js/jquery-ui.js"></script>
+
+  <script type="text/javascript" src="../../blocks_compressed.js"></script>
+  <script type="text/javascript" src="../../javascript_compressed.js"></script>
+  <script type="text/javascript" src="../../{$ij.langSrc}"></script>
+
+  <table width="100%" height="100%">
+    <tr>
+      <td>
+        <h1>
+          <span id="title">
+            <h3>VirtualSense App Maker</h3>
+          </span>
+        </h1>
+      </td>
+      <td class="farSide">
+        <select id="languageMenu"></select>
+       
+      </td>
+    </tr>
+    <tr>
+      <td colspan=2>
+        <table width="100%">
+          <tr id="tabRow" height="1em">
+            <td id="tab_blocks" class="tabon">{{msg meaning="Code.blocks" desc="tab text - Displays and allows editing of the user's program as blocks.\n{lb}{lb}Identical|Blocks{rb}{rb}"}}Blocks{{/msg}}</td>
+            <td class="tabmin">&nbsp;</td>
+            <td id="tab_javascript" class="taboff">Java</td>
+            <td class="tabmax">
+              <button id="runButton" class="notext primary">
+                <img src='../../media/1x1.gif' class="run icon21">
+              </button>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td height="99%" colspan=2 id="content_area">
+        {call .toolbox /}
+      </td>
+    </tr>
+  </table>
+  <div id="content_blocks" class="content"></div>
+  <pre id="content_javascript" class="content"></pre>
+  <textarea id="content_xml" class="content" wrap="off"></textarea>
+  {call apps.dialog /}
+  {call apps.storageDialog /}
+{/template}
+
+/**
+ * Toolbox.
+ */
+{template .toolbox}
+  <xml id="toolbox" style="display: none">
+
+    <category name="{msg meaning="Apps.catLoops" desc="IBID"}Control{/msg}">
+      <block type="controls_if"></block>
+      <block type="controls_repeat_ext">
+        <value name="TIMES">
+          <block type="math_number">
+            <field name="NUM">10</field>
+          </block>
+        </value>
+      </block>
+      <block type="controls_whileUntil"></block>
+      <block type="controls_for">
+        <value name="FROM">
+          <block type="math_number">
+            <field name="NUM">1</field>
+          </block>
+        </value>
+        <value name="TO">
+          <block type="math_number">
+            <field name="NUM">10</field>
+          </block>
+        </value>
+        <value name="BY">
+          <block type="math_number">
+            <field name="NUM">1</field>
+          </block>
+        </value>
+      </block>
+      <block type="wait"></block>
+    </category>
+
+    <category name="{msg meaning="Apps.catLogic" desc="IBID"}Logic{/msg}">
+      <block type="logic_compare"></block>
+      <block type="logic_operation"></block>
+      <block type="logic_negate"></block>
+      <block type="logic_boolean"></block>
+    </category>
+
+    <category name="{msg meaning="Apps.catMath" desc="IBID"}Math{/msg}">
+      <block type="math_number"></block>
+      <block type="math_arithmetic"></block>
+      <block type="math_modulo"></block>
+    </category>
+
+    <category name="{msg meaning="Apps.catText" desc="IBID"}Text{/msg}">
+      <block type="text"></block>
+      <block type="text_length"></block>
+      <block type="text_isEmpty"></block>
+      <block type="equals_string"></block>
+    </category>
+
+    <category name="{msg meaning="Apps.catVariables" desc="IBID"}Variables{/msg}">
+      <block type="init_integer"></block>
+      <block type="init_shared_integer"></block>
+      <block type="init_boolean"></block>
+      <block type="init_shared_boolean"></block>
+      <block type="init_string"></block>
+      <block type="init_shared_string"></block>
+      <block type="set_integer"></block>
+      <block type="set_boolean"></block>
+      <block type="set_string"></block>
+      <block type="get_integer"></block>
+      <block type="get_boolean"></block>
+      <block type="get_string"></block>
+    </category>
+
+    <category name="{msg meaning="Apps.catProcedures" desc="IBID"}Functions{/msg}" custom="PROCEDURE"></category>
+
+    <category name="{msg meaning="Apps.catEvents" desc="IBID"}Events{/msg}">
+      <block type="trigger_event"></block>
+      <block type="wait_event"></block>
+      <block type="when_event"></block>
+      <block type="wait_interrupt"></block>
+      <block type="when_interrupt"></block>
+      <block type="set_timer_interrupt"></block>
+      <block type="wait_timer_interrupt"></block>
+      <block type="when_timer_interrupt"></block>
+    </category>
+
+    <category name="{msg meaning="Apps.catVsense" desc="IBID"}Sensors{/msg}">
+      <block type="sensors_read"></block>
+    </category>
+
+    <category name="{msg meaning="Apps.catVsense" desc="IBID"}Actuators{/msg}">
+      <block type="set_leds"></block>
+    </category>
+
+    <category name="{msg meaning="Apps.catVsense" desc="IBID"}Power Manager{/msg}">
+      <block type="sleep_mcu"></block>
+      <block type="standby_mcu"></block>
+      <block type="hybernate_mcu"></block>
+      <block type="mcu_frequency"></block>
+    </category>
+
+    <category name="{msg meaning="Apps.catVsense" desc="IBID"}Input{/msg}">
+      <block type="read_dios"></block>
+      <block type="config_adc"></block>
+      <block type="read_serial"></block>
+    </category>
+
+    <category name="{msg meaning="Apps.catVsense" desc="IBID"}Output{/msg}">
+      <block type="write_dios"></block>
+      <block type="print_serial"></block>
+      <block type="print_line_serial"></block>
+    </category>
+
+    <category name="{msg meaning="Apps.catVsense" desc="IBID"}Messages{/msg}">
+      <block type="select_protocol"></block>
+      <block type="send_int_msg"></block>
+      <block type="send_data_msg"></block>
+      <block type="receive_int_msg"></block>
+      <block type="receive_data_msg"></block>
+      <block type="node_id"></block>
+      <block type="msg_sender_id"></block>
+      <block type="msg_value"></block>
+      <block type="add_node_list"></block>
+      <block type="contains_node_list"></block>
+      <block type="clear_node_list"></block>
+      <block type="size_node_list"></block>
+    </category>
+
+    <category name="{msg meaning="Apps.catVsense" desc="IBID"}Companion{/msg}">
+      <block type="command_receive"></block>
+      <block type="command_receive_return"></block>
+      <block type="send_value_companion"></block>
+    </category>
+
+  </xml>
+{/template}
